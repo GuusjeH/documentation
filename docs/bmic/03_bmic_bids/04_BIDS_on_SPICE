@@ -1,0 +1,55 @@
+---
+title: PET-BIDS on SPICE
+---
+
+The Brain Imaging Data Structure [BIDS](https://bids-specification.readthedocs.io/en/stable/) is a community driven standard for organizing imaging data that simplify data sharing and collaboration. Organizing your data according to BIDS promote data sharing and enable the use of common pre-processing pipelines and tools (e.g. [PETPrep](https://petprep.readthedocs.io/en/latest/)), promoting traceable and reproducible research.
+
+## Your data at CIR
+If you don't have a project or are starting up data collection at BMIC, consult the [road map for projects at CIR](https://ki.se/en/research/research-areas-centres-and-networks/research-centres/centre-for-imaging-research-cir/road-map-for-projects-at-cir) for logical next steps for you to consider. The [data collection page](https://k-cir.github.io/cir-wiki/01_data_collection/) provide context for how and why CIR gather data for your project and how to register your data collection.
+
+## BMIC raw data
+Research data collected at MRC should ??????. Doing so, and registering your session in the [CIR-session Redcap form](https://redcap.link/cir-session) ensure your data is collected in your project folder on [SPICE](https://k-cir.github.io/cir-wiki/SPICE/) within 24 hours. The data is stored in the original DICOM format and organized according to a study specific subject ID, session number and tracer.
+
+The raw data in your project on SPICE will be structured like this:
+```markdown
+/data/projects/yourproject/raw/bmic/sub-XXX/ses-XX/
+├── ucbj
+|       ├ 0000001.dcm
+|       ├ 0000002.dcm
+|       ├ ....
+|       └─0022500.dcm
+└── pbr28
+        ├ 0000001.dcm
+        ├ 0000002.dcm
+        ├ ....
+        └─0022500.dcm
+```
+<br>
+CIR offer support in organizing your data as BIDS and provide an simplified interface for using [dcm2bids](https://unfmontreal.github.io/Dcm2Bids/3.2.0/) and [pypet2bids](https://pet2bids.readthedocs.io/en/latest/index.html). Essentially, dcm2bids look through your raw data, check if the DICOM metadata match the criteria you specify in a config file and if so, convert those DICOM files to Nifti and organize them in a BIDS format. While pypet2bids normally does not use a config file, we have integrated this here to harmonize with the BIDS conversion used in MRI. This offers more control over the data, while still using the PET specific conversion used by pypet2bids. 
+
+The dcm2bids config file is a JSON file that specify what criteria to look for in the DICOM metadata for each sequence in your protocol and how to name the output files. Building this config file can be a bit tricky, but CIR offer this helper that extract the relevant DICOM metadata from your data and present it in an interactive table in your browser so you can select what criteria to include in your config file.
+
+This is done with two repositories, publicly available on Github:
+
+<p style="text-align: left; font-size: 36px; font-weight: bold; margin: 0 !important; padding: 0; line-height: 1.2;">
+  <a href="https://github.com/k-CIR/bids-utils-mr" target="_blank">1. bids-utils-mr</a>
+</p>
+<p style="margin-top: 0;">Clone the repository to your project folder on SPICE (using git). It will manage all the processing on SPICE and setup a server for you to inspect your data, create a config file and run processing via the browser on your local computer. The repository contain:</p>
+
+- **index.html** - A html file with an interface for running dcm2bids
+- **server.py** - A python script that set up an http server that function as a bridge between SPICE, were the process is happening, and your local computer.
+- **config_builder.py** - A python script that help you build the config file needed for dcm2bids.
+- **bids_runner.py** - A script running dcm2bids in parallel on SPICE.
+
+<p style="text-align: left; font-size: 36px; font-weight: bold; margin: 0 !important; padding: 0; line-height: 1.2;">
+  <a href="https://github.com/k-CIR/serve-mr-bids" target="_blank">2. serve-mr-bids</a>
+</p>
+<p style="margin-top: 0;">Clone this repository to your local machine. It contains a simple script that prompt for your user details for connecting to SPICE and project name.</p>
+
+- **ssh-connect.sh** - A shell script for connecting to SPICE via SSH prompting you for username, project and password (if you don't have SSH keys setup). The script will also setup port forwarding for you to be able to access the server running on SPICE from your local computer. On connection it prints a unique URL to terminal that you can open in your local browser to access the interface for running dcm2bids on SPICE.
+
+**Note:** As always you need to be on the KI network or connected to KI via VPN to access SPICE. You also need to have a user account on SPICE and access to the project you want to work with.
+
+<br>
+
+# Step by step guide
